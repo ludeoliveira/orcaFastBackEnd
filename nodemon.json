@@ -1,0 +1,6 @@
+{
+    "env": {
+        "PORT":8080,
+        "DATABASE_URL": "postgres://postgres:697457@localhost/postgres"
+    }
+}
