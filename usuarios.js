@@ -12,6 +12,7 @@ app.use(express.json())
 app.use(cors())
 
 
+
 const consStr =  process.env.DATABASE_URL
 const pool = new pg.Pool({ connectionString: consStr })
 
