@@ -39,7 +39,30 @@ app.post('/usuarios', (req, res)=>{
     })
 })
 
-
+app.put('/usuarios/:idusuario', (req, res) => {
+    pool.connect((err, client) => {
+        if (err) {
+            return res.status(401).send({
+                message: 'Erro ao conectar no database',
+                erro: err.message
+            })
+        }
+        
+        var sql = 'UPDATE usuario SET email=$1, senha=$2, telefone=$3, celular=$4, cep=$5, rua=$6, numeroendereco=$7, complementoendereco=$8, bairro=$9, cidade=$10, estado=$11, logo=$12  WHERE id = $13'
+        var dados = [req.body.email, req.body.senha, req.body.telefone, req.body.celular, req.body.cep, req.body.rua, req.body.numeroendereco, req.body.complementoendereco, req.body.bairro, req.body.cidade, req.body.estado, req.body.logo, req.params.idusuario]
+        client.query(sql, dados, (error, result) => {
+            if (error) {
+                res.send({
+                    message: 'Erro ao consultar dados',
+                    error: error.message
+                })
+            }
+            return res.status(200).send({
+                message: 'Usuario alterado com sucesso!'
+            })
+        })
+    })
+})
 
 
 app.listen(port, () => {
