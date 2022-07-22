@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(cors());
 
 const consStr = process.env.DATABASE_URL;
-const pool = new pg.Pool({ connectionString: consStr });
+const pool = new pg.Pool({ connectionString: consStr , ssl: {rejectUnauthorized: false} });
 
 app.post("/usuarios", (req, res) => {
   pool.connect((err, client) => {
@@ -21,16 +21,16 @@ app.post("/usuarios", (req, res) => {
         message: "Erro de conexão",
       });
     }
-    client.query('select * from usuario where cnpj = $1', [req.body.cnpj], (error, result) => {
+    client.query('select * from usuario where cnpj = $1 or email=$2', [req.body.cnpj,req.body.email], (error, result) => {
       if (result.rowCount > 0) {
-        return res.status(400).send({ message: 'Usuário já cadastrado' })
+        return res.status(400).send({ message: 'Esse usuário já está cadastrado no sistema' })
       } else {
         bcrypt.hash(req.body.senha, 10, (error, hash) => {
           if (error) {
             return res.status(500).send({ message: 'Falha na autenticação' })
           }
           var sql =
-            "insert into usuario (razaosocial, cnpj, email, senha, telefone, celular, cep, rua, numeroendereco, complementoendereco, bairro, cidade, estado, logo)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)";
+            "insert into usuario (razaosocial, cnpj, email, senha, telefone, celular, cep, rua, numeroendereco, complementoendereco, bairro, cidade, estado, logo, perfil)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
           var dados = [
             req.body.razaosocial,
             req.body.cnpj,
@@ -46,6 +46,7 @@ app.post("/usuarios", (req, res) => {
             req.body.cidade,
             req.body.estado,
             req.body.logo,
+            req.body.perfil
           ];
           client.query(sql, dados, (error, result) => {
             if (error) {
@@ -86,7 +87,8 @@ app.post("/usuarios/login", (req, res) => {
             let token = jwt.sign({
               razaosocial: result.rows[0].razaosocial,
               cnpj: result.rows[0].cnpj,
-              email: result.rows[0].email
+              email: result.rows[0].email,
+              perfil: result.rows[0].perfil
             },
               'segredo', { expiresIn: '1h' }
             )
@@ -122,7 +124,7 @@ app.put("/usuarios/:idusuario", (req, res) => {
         return res.status(500).send({ message: 'Falha na autenticação' })
       }
       var sql =
-        "UPDATE usuario SET email=$1, senha=$2, telefone=$3, celular=$4, cep=$5, rua=$6, numeroendereco=$7, complementoendereco=$8, bairro=$9, cidade=$10, estado=$11, logo=$12  WHERE id = $13";
+        "UPDATE usuario SET email=$1, senha=$2, telefone=$3, celular=$4, cep=$5, rua=$6, numeroendereco=$7, complementoendereco=$8, bairro=$9, cidade=$10, estado=$11, logo=$12, perfil=$13  WHERE id = $14";
       var dados = [
         req.body.email,
         req.body.senha,
@@ -136,6 +138,7 @@ app.put("/usuarios/:idusuario", (req, res) => {
         req.body.cidade,
         req.body.estado,
         req.body.logo,
+        req.body.perfil,
         req.params.idusuario,
       ];
       client.query(sql, dados, (error, result) => {

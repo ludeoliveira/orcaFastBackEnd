@@ -1,6 +1,6 @@
 {
     "env": {
         "PORT":8080,
-        "DATABASE_URL": "postgres://postgres:postgres@localhost/orcaFast"
+        "DATABASE_URL": "postgres://cpaduoekkrbdgt:75be93cf9bf2bf1d085116ad6e58505d9e2114f251ff1487a3b9f2f4ee4b4db6@ec2-54-87-179-4.compute-1.amazonaws.com:5432/dlnh9tr7q8c3n"
     }
 }
