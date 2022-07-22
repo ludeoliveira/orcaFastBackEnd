@@ -21,37 +21,47 @@ app.post("/usuarios", (req, res) => {
         message: "Erro de conexão",
       });
     }
-    bcrypt.hash(req.body.senha, 10, (error, hash) => {
-      var sql =
-        "insert into usuario (razaosocial, cnpj, email, senha, telefone, celular, cep, rua, numeroendereco, complementoendereco, bairro, cidade, estado, logo)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)";
-      var dados = [
-        req.body.razaosocial,
-        req.body.cnpj,
-        req.body.email,
-        hash,
-        req.body.telefone,
-        req.body.celular,
-        req.body.cep,
-        req.body.rua,
-        req.body.numeroendereco,
-        req.body.complementoendereco,
-        req.body.bairro,
-        req.body.cidade,
-        req.body.estado,
-        req.body.logo,
-      ];
-      client.query(sql, dados, (error, result) => {
-        if (error) {
-          return res.status(500).send({
-            message: "Erro ao inserir o usuário",
-            error: error.message,
+    client.query('select * from usuario where cnpj = $1', [req.body.cnpj], (error, result) => {
+      if (result.rowCount > 0) {
+        return res.status(400).send({ message: 'Usuário já cadastrado' })
+      } else {
+        bcrypt.hash(req.body.senha, 10, (error, hash) => {
+          if (error) {
+            return res.status(500).send({ message: 'Falha na autenticação' })
+          }
+          var sql =
+            "insert into usuario (razaosocial, cnpj, email, senha, telefone, celular, cep, rua, numeroendereco, complementoendereco, bairro, cidade, estado, logo)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)";
+          var dados = [
+            req.body.razaosocial,
+            req.body.cnpj,
+            req.body.email,
+            hash,
+            req.body.telefone,
+            req.body.celular,
+            req.body.cep,
+            req.body.rua,
+            req.body.numeroendereco,
+            req.body.complementoendereco,
+            req.body.bairro,
+            req.body.cidade,
+            req.body.estado,
+            req.body.logo,
+          ];
+          client.query(sql, dados, (error, result) => {
+            if (error) {
+              return res.status(500).send({
+                message: "Erro ao inserir o usuário",
+                error: error.message,
+              });
+            }
+            return res.status(201).send({
+              message: "Usuário cadastrado com sucesso",
+            });
           });
-        }
-        return res.status(201).send({
-          message: "Usuário cadastrado com sucesso",
         });
-      });
-    });
+      }
+    })
+
   });
 });
 
@@ -63,34 +73,39 @@ app.put("/usuarios/:idusuario", (req, res) => {
         erro: err.message,
       });
     }
-
-    var sql =
-      "UPDATE usuario SET email=$1, senha=$2, telefone=$3, celular=$4, cep=$5, rua=$6, numeroendereco=$7, complementoendereco=$8, bairro=$9, cidade=$10, estado=$11, logo=$12  WHERE id = $13";
-    var dados = [
-      req.body.email,
-      req.body.senha,
-      req.body.telefone,
-      req.body.celular,
-      req.body.cep,
-      req.body.rua,
-      req.body.numeroendereco,
-      req.body.complementoendereco,
-      req.body.bairro,
-      req.body.cidade,
-      req.body.estado,
-      req.body.logo,
-      req.params.idusuario,
-    ];
-    client.query(sql, dados, (error, result) => {
+    bcrypt.hash(req.body.senha, 10, (error, hash) => {
       if (error) {
-        res.send({
-          message: "Erro ao consultar dados",
-          error: error.message,
-        });
+        return res.status(500).send({ message: 'Falha na autenticação' })
       }
-      return res.status(200).send({
-        message: "Usuario alterado com sucesso!",
-      });
+      var sql =
+        "UPDATE usuario SET email=$1, senha=$2, telefone=$3, celular=$4, cep=$5, rua=$6, numeroendereco=$7, complementoendereco=$8, bairro=$9, cidade=$10, estado=$11, logo=$12  WHERE id = $13";
+      var dados = [
+        req.body.email,
+        req.body.senha,
+        req.body.telefone,
+        req.body.celular,
+        req.body.cep,
+        req.body.rua,
+        req.body.numeroendereco,
+        req.body.complementoendereco,
+        req.body.bairro,
+        req.body.cidade,
+        req.body.estado,
+        req.body.logo,
+        req.params.idusuario,
+      ];
+      client.query(sql, dados, (error, result) => {
+        if (error) {
+          res.send({
+            message: "Erro ao consultar dados",
+            error: error.message,
+          });
+        }
+        return res.status(200).send({
+          message: "Usuario alterado com sucesso!",
+        });
+      })
+
     });
   });
 });
