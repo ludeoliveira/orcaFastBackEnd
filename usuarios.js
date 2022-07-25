@@ -12,25 +12,45 @@ app.use(express.json());
 app.use(cors());
 
 const consStr = process.env.DATABASE_URL;
-const pool = new pg.Pool({ connectionString: consStr , ssl: {rejectUnauthorized: false} });
+const pool = new pg.Pool({ connectionString: consStr, ssl: { rejectUnauthorized: false } });
 
 
-app.get('/usuarios',(req,res)=>{
-  pool.connect((err,client)=>{
-    if(err){
+app.get('/usuarios', (req, res) => {
+  pool.connect((err, client) => {
+    if (err) {
       return res.status(401).send({
         message: 'Erro ao conectar com a database'
       })
     }
-    
-    client.query('select * from usuario', (error, result)=>{
-      if(error){
+
+    client.query('select * from usuario', (error, result) => {
+      if (error) {
         res.send({
           message: 'Erro ao consultar dados',
           erro: error.message
         })
       }
       return res.status(200).send(result.rows)
+    })
+  })
+})
+
+app.get('/usuarios/:idusuario', (req, res) => {
+  pool.connect((err, client) => {
+    if (err) {
+      return res.status(401).send({
+        message: 'Erro ao conectar com a database'
+      })
+    }
+
+    client.query('select * from usuario where id = $1', [req.params.idusuario], (error, result)=> {
+      if(error) {
+        res.send({
+          message: 'Erro ao consultar dados',
+          erro: error.message
+        })
+      }
+      return res.status(200).send(result.rows[0])
     })
   })
 })
@@ -43,7 +63,7 @@ app.post("/usuarios", (req, res) => {
         message: "Erro de conexão",
       });
     }
-    client.query('select * from usuario where cnpj = $1 or email=$2', [req.body.cnpj,req.body.email], (error, result) => {
+    client.query('select * from usuario where cnpj = $1 or email=$2', [req.body.cnpj, req.body.email], (error, result) => {
       if (result.rowCount > 0) {
         return res.status(400).send({ message: 'Esse usuário já está cadastrado no sistema' })
       } else {
@@ -179,7 +199,26 @@ app.put("/usuarios/:idusuario", (req, res) => {
   });
 });
 
-
+app.delete('/usuarios/:idusuario', (req, res) => {
+  pool.connect((err, client) => {
+    if(err) {
+      return res.status(401).send({
+        message: 'Erro ao conectar na database'
+      })
+    }
+    client.query('delete from usuario where id = $1', [req.params.idusuario], (error, result) => {
+      if (error) {
+        return res.send({
+          message: 'Erro ao excluir usuário',
+          erro: error.message
+        })
+      }
+      return res.status(200).send({
+        message: 'Usuário excluído com sucesso'
+      })
+    })
+  })
+})
 
 app.listen(port, () => {
   console.log(`executando em http://localhost/${port}`);
