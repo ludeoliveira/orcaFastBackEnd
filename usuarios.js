@@ -43,8 +43,8 @@ app.get('/usuarios/:idusuario', (req, res) => {
       })
     }
 
-    client.query('select * from usuario where id = $1', [req.params.idusuario], (error, result)=> {
-      if(error) {
+    client.query('select * from usuario where id = $1', [req.params.idusuario], (error, result) => {
+      if (error) {
         res.send({
           message: 'Erro ao consultar dados',
           erro: error.message
@@ -201,24 +201,33 @@ app.put("/usuarios/:idusuario", (req, res) => {
 
 app.delete('/usuarios/:idusuario', (req, res) => {
   pool.connect((err, client) => {
-    if(err) {
+    if (err) {
       return res.status(401).send({
         message: 'Erro ao conectar na database'
       })
     }
-    client.query('delete from usuario where id = $1', [req.params.idusuario], (error, result) => {
-      if (error) {
-        return res.send({
-          message: 'Erro ao excluir usuário',
-          erro: error.message
+    client.query('select * from usuario where id = $1', [req.params.idusuario], (error, result) => {
+      if (result.rowCount > 0) {
+        client.query('delete from usuario where id = $1', [req.params.idusuario], (error, result) => {
+          if (error) {
+            return res.send({
+              message: 'Erro ao excluir usuário',
+              erro: error.message
+            })
+          }
+          return res.status(200).send({
+            message: 'Usuário excluído com sucesso'
+          })
         })
       }
-      return res.status(200).send({
-        message: 'Usuário excluído com sucesso'
-      })
+      else {
+        return res.status(500).send({ message: 'Usuário não existe na base de dados' })
+      }
     })
   })
 })
+
+
 
 app.listen(port, () => {
   console.log(`executando em http://localhost/${port}`);
