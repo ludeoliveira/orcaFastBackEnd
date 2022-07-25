@@ -14,6 +14,28 @@ app.use(cors());
 const consStr = process.env.DATABASE_URL;
 const pool = new pg.Pool({ connectionString: consStr , ssl: {rejectUnauthorized: false} });
 
+
+app.get('/usuarios',(req,res)=>{
+  pool.connect((err,client)=>{
+    if(err){
+      return res.status(401).send({
+        message: 'Erro ao conectar com a database'
+      })
+    }
+    
+    client.query('select * from usuario', (error, result)=>{
+      if(error){
+        res.send({
+          message: 'Erro ao consultar dados',
+          erro: error.message
+        })
+      }
+      return res.status(200).send(result.rows)
+    })
+  })
+})
+
+
 app.post("/usuarios", (req, res) => {
   pool.connect((err, client) => {
     if (err) {
@@ -127,7 +149,7 @@ app.put("/usuarios/:idusuario", (req, res) => {
         "UPDATE usuario SET email=$1, senha=$2, telefone=$3, celular=$4, cep=$5, rua=$6, numeroendereco=$7, complementoendereco=$8, bairro=$9, cidade=$10, estado=$11, logo=$12, perfil=$13  WHERE id = $14";
       var dados = [
         req.body.email,
-        req.body.senha,
+        hash,
         req.body.telefone,
         req.body.celular,
         req.body.cep,
@@ -156,6 +178,8 @@ app.put("/usuarios/:idusuario", (req, res) => {
     });
   });
 });
+
+
 
 app.listen(port, () => {
   console.log(`executando em http://localhost/${port}`);
