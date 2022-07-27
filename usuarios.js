@@ -130,7 +130,8 @@ app.post("/usuarios/login", (req, res) => {
               razaosocial: result.rows[0].razaosocial,
               cnpj: result.rows[0].cnpj,
               email: result.rows[0].email,
-              perfil: result.rows[0].perfil
+              perfil: result.rows[0].perfil,
+              id: result.rows[0].id
             },
               'segredo', { expiresIn: '1h' }
             )
