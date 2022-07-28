@@ -3,7 +3,7 @@ const app = express();
 const port = process.env.PORT;
 
 const pg = require("pg");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 // para ver o que vem do formulario do postman
