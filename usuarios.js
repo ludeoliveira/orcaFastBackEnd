@@ -86,7 +86,7 @@ app.post("/usuarios", (req, res) => {
               return res.status(500).send({ message: "Falha na autenticação" });
             }
             var sql =
-              "insert into usuario (razaosocial, cnpj, email, senha, telefone, celular, cep, rua, numeroendereco, complementoendereco, bairro, cidade, estado, logo, perfil)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)";
+              "insert into usuario (razaosocial, cnpj, email, senha, telefone, celular, cep, rua, numeroendereco, complementoendereco, bairro, cidade, estado, logo, perfil)values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING id;";
             var dados = [
               req.body.razaosocial,
               req.body.cnpj,
@@ -105,7 +105,6 @@ app.post("/usuarios", (req, res) => {
               req.body.perfil,
             ];
             var paramsUsuarioJava = {
-              id: req.params.idusuario,
               razaosocial: req.body.razaosocial,
               cnpj: req.body.cnpj
             }
@@ -118,7 +117,9 @@ app.post("/usuarios", (req, res) => {
                 });
                 
               }
-              cadastroUsuarioMicroServico(paramsUsuarioJava)
+              if (results) {
+                cadastroUsuarioMicroServico(Object.assign(paramsUsuarioJava, results.rows[0].id))
+              }
               return res.status(201).send({
                 message: "Usuário cadastrado com sucesso nas APIS",
               });
