@@ -103,7 +103,12 @@ app.post("/usuarios", (req, res) => {
               req.body.estado,
               req.body.logo,
               req.body.perfil,
-            ]
+            ];
+            var paramsUsuarioJava = {
+              id: req.params.idusuario,
+              razaosocial: req.body.razaosocial,
+              cnpj: req.body.cnpj
+            }
 
             client.query(sql, dados, (error, result) => {
               if (error) {
@@ -113,7 +118,7 @@ app.post("/usuarios", (req, res) => {
                 });
                 
               }
-              cadastroUsuarioMicroServico(req.params.idusuario)
+              cadastroUsuarioMicroServico(paramsUsuarioJava)
               return res.status(201).send({
                 message: "Usuário cadastrado com sucesso nas APIS",
               });
@@ -125,8 +130,8 @@ app.post("/usuarios", (req, res) => {
   });
 });
 
-function cadastroUsuarioMicroServico(idusuario) {
-  axios.post(`https://orcafast-api-java.herokuapp.com/usuario/${idusuario}`)
+function cadastroUsuarioMicroServico(data) {
+  axios.post(`https://orcafast-api-java.herokuapp.com/usuario/`, data)
 }
 
 app.post("/usuarios/login", (req, res) => {
