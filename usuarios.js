@@ -1,3 +1,4 @@
+const axios = require('axios');
 const express = require("express");
 const app = express();
 const port = process.env.PORT;
@@ -102,16 +103,19 @@ app.post("/usuarios", (req, res) => {
               req.body.estado,
               req.body.logo,
               req.body.perfil,
-            ];
+            ]
+
             client.query(sql, dados, (error, result) => {
               if (error) {
                 return res.status(500).send({
                   message: "Erro ao inserir o usuário",
                   error: error.message,
                 });
+                
               }
+              cadastroUsuarioMicroServico(req.params.idusuario)
               return res.status(201).send({
-                message: "Usuário cadastrado com sucesso",
+                message: "Usuário cadastrado com sucesso nas APIS",
               });
             });
           });
@@ -120,6 +124,10 @@ app.post("/usuarios", (req, res) => {
     );
   });
 });
+
+function cadastroUsuarioMicroServico(idusuario) {
+  axios.post(`https://orcafast-api-java.herokuapp.com/usuario/${idusuario}`)
+}
 
 app.post("/usuarios/login", (req, res) => {
   pool.connect((err, client, done) => {
