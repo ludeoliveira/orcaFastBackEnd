@@ -47,23 +47,27 @@ app.get("/usuarios/:idusuario", (req, res) => {
       });
     }
 
-    client.query(
-      "select * from usuario where id = $1",
-      [req.params.idusuario],
-      (error, result) => {
-        done();
-        if (error) {
-          res.send({
-            message: "Erro ao consultar dados",
-            erro: error.message,
-          });
-        } if (result.rowCount > 0) {
-          return res.status(200).send(result.rows[0]); 
-        } else {
-          return res.status(404).send({ message: "Usuário não encontrado"})
+    if(parseInt(req.params.idusuario) > 0) {
+      client.query(
+        "select * from usuario where id = $1",
+        [req.params.idusuario],
+        (error, result) => {
+          done();
+          if (error) {
+            res.send({
+              message: "Erro ao consultar dados",
+              erro: error.message,
+            });
+          } if (result.rowCount > 0) {
+            return res.status(200).send(result.rows[0]); 
+          } else {
+            return res.status(404).send({ message: "Usuário não encontrado"})
+          }
         }
-      }
-    );
+      );
+    } else {
+      return res.status(404).send({ message: "Usuário não encontrado"})
+    }
   });
 });
 
@@ -285,5 +289,5 @@ app.delete("/usuarios/:idusuario", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`executando em http://localhost/${port}`);
+  console.log(`executando em http://localhost:${port}`);
 });
