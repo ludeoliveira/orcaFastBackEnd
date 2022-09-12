@@ -57,8 +57,11 @@ app.get("/usuarios/:idusuario", (req, res) => {
             message: "Erro ao consultar dados",
             erro: error.message,
           });
+        } if (result.rowCount > 0) {
+          return res.status(200).send(result.rows[0]); 
+        } else {
+          return res.status(404).send({ message: "Usuário não encontrado"})
         }
-        return res.status(200).send(result.rows[0]);
       }
     );
   });
